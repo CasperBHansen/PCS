@@ -1,0 +1,272 @@
+\documentclass[11pt,a4paper]{article}
+
+%===== PACKAGES =====%
+
+\usepackage{a4wide}             % save a few rainforests
+\usepackage{color}              % so purrty
+\usepackage{float}              % put things exactly where I tell you!
+\usepackage[utf8]{inputenc}     % can i has UTF-8
+\usepackage{listings}           % codez
+\usepackage{multicol}           % much columns, wow!
+
+\definecolor{comment}{rgb}      {0.38, 0.62, 0.38}
+\definecolor{keyword}{rgb}      {0.10, 0.10, 0.81}
+\definecolor{identifier}{rgb}   {0.00, 0.00, 0.00}
+\definecolor{string}{rgb}       {0.50, 0.50, 0.50}
+
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\file}[1]{{\tt #1}}
+\newcommand{\imp}{\rightarrow}
+
+\newcommand{\secref}[1]{(see section~\ref{#1} on page~\pageref{#1})}
+\newcommand{\figref}[1]{(see figure~\ref{#1})}
+
+% usage: \codefig{label}{file}{firstline}{lastline}{description}
+\newcommand{\codefig}[5]
+{
+\begin{figure}[H]
+    \lstinputlisting[firstnumber=#3,firstline=#3,lastline=#4]{../../../../../Sites/barbarbar/}
+    \caption{#5 (#2)}
+    \label{code:#1}
+\end{figure}
+}
+
+\lstset
+{
+    language=C++,
+    % general settings
+    numbers=left,
+    frame=single,
+    basicstyle=\footnotesize\ttfamily,
+    tabsize=2,
+    breaklines=true,
+    showstringspaces=false,
+    % syntax highlighting
+    commentstyle=\color{comment},
+    keywordstyle=\color{keyword},
+    identifierstyle=\color{identifier},
+    stringstyle=\color{string},
+}
+
+\title
+{
+    {\Large Proactive Computer Security} \\
+    Assignment 1 \\
+    {\large Web Security}
+}
+
+\author
+{
+    Casper B. Hansen \\
+    University of Copenhagen \\
+    Department of Computer Science
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\begin{multicols}{2}
+    \begin{abstract}
+        This assignment deals with common issues in web security. We start by
+        taking a black-box approach of exploiting unescaped requests and
+        insecure form validations. We then move on to a white-box assessment
+        of SQL injection vulnerabilities in the system.
+        
+        All topics covered are briefly commented on afterward with regard to
+        possible fixes.
+    \end{abstract}
+    \columnbreak
+    \tableofcontents
+\end{multicols}
+\thispagestyle{empty}
+\clearpage
+
+\section{Black Box Assessment}
+
+\subsection{Cookie Theft}
+As can be seen in the response URL by sending a request using the form in
+\file{users.php} it uses the {\it get} method. The form field is named
+``user'', as is apparent from the URL response. Observing that the page uses
+the {\it get} variable ``user'' to populate the form field on the responding
+HTML page, we can use this to attack the system.
+
+By constructing a similar URL, but starting it by terminating the input HTML
+tag with \code{">} --- as shown on line 1 below --- we can add HTML, and hence
+also JavaScript. Further appending a script which makes an asynchronous
+request to a desired destination --- in this case we simply listen in on a
+designated port --- we can traffic the private data stored in the session
+cookie.
+
+\begin{figure}[H]
+    \lstinputlisting{cookie_theft.href}
+    \caption{Cookie theft link (\file{cookie\_theft.href})}
+\end{figure}
+
+The script constructs a URL to our desired destination on line 3. It then
+creates a new \code{XMLHttpRequest} object on line 4, and proceeds to set up
+what the request should do upon being ready on lines 5--7. It then opens the
+request using the {\it get} method, the constructed URL and does so
+asynchronously and sends it on lines 8--9.
+
+Since this is an asynchronous request no changes are visible in the browser,
+and upon completion the user simply sees the regular \file{users.php} page.
+
+\subsubsection{Possible fix}
+Upon receiving the request, and more importantly before making use of the
+passed data, the page should escape characters that can be used to terminate
+an HTML element or similar malicious technique.
+
+\newpage
+\subsection{Cross-site Request Forgery}
+We want to fake a {\it post} request to the
+{\tt http://localhost/barbarbar/transfer.php}, since by the looks of the form
+of the HTML source retrieved through the browser of that page, transfers do
+not rely on any validations, and thus we can simply construct a valid {\it
+post} request without having any session or cookie information at all.
+
+We start out by planning our escape plan; redirection to the {\tt
+http://yesimparanoid.com/} site, which is defined on lines 7--9 as a function
+we will be using as a callback when the attack is completed.
+
+Since we must ensure that the user does not suspect anything, we will set up
+an \code{iframe} as done on line 12, where we will direct our request to.
+
+We then replicate the form found in the HTML source retrieved from the browser
+on the \file{transfer.php} page, but using constant values for the inputs and
+ensuring that all parts that would be sent by the original form would also be
+sent using our reconstruction --- particularly, we have to make ``submission''
+an explicit value, rather than a button.
+
+All that remains is to submit the form upon loading the document, which is
+done on line 20. Do note that the \code{iframe} will call \code{callback} when
+it has completed the attack as a result of specifying that function in the
+\code{onload} attribute.
+
+\begin{figure}[H]
+    \lstinputlisting{XSRF.html}
+    \caption{XSRF document (\file{XSRF.html})}
+\end{figure}
+
+\subsubsection{Possible fix}
+This vulnerability could be eliminated by checking the referer of the request.
+In PHP this is found in the server variable \code{\$\_SERVER['HTTP\_REFERER']}.
+A site should never trust any other referer than itself and possibly
+explicitly white-list declared referers.
+
+\newpage
+\section{White Box Assessment}
+
+\subsection{Acquiring private user data}
+\label{sec:white|sub:acquire}
+In the file \file{index.php} on lines 20--21 an SQL query is constructed from
+the text field data supplied by the \code{profileform} on lines 14--29. The
+PHP preparations for the SQL statement looks as follows.
+\begin{figure}[H]
+    \begin{lstlisting}
+UPDATE Person
+SET Profile = '$profile'
+WHERE ProfileId = $user->id
+    \end{lstlisting}
+    \caption{Profile update SQL statement}
+\end{figure}
+Since MySQL allows for updating multiple values we can append any number of
+columns and give them values to our liking. All we have to ensure is that we
+terminate the opened quote. The statement below is given as input.
+
+\begin{figure}[H]
+    \begin{lstlisting}[language=SQL]
+',
+Person.DikuCoins = 100,
+Person.Profile =
+(
+    SELECT GROUP_CONCAT( CONCAT(Tmp.PersonId, '\t', Tmp.Username, '\t', Tmp.Salt, '\t', Tmp.DikuCoins) SEPARATOR '\n')
+    FROM (SELECT * FROM Person) AS Tmp
+),
+Username='<your-username>
+% Password='5d4d92ea6d0ef715c6e14454ddba3697
+    \end{lstlisting}
+    \caption{Profile update input}
+\end{figure}
+
+The statement above terminates the opened quote on line 1, and then by comma
+separation of each column we wish to update we supply the data we want to
+alter. As can be seen, we set our own DIKU coins to 100 --- just for fun ---
+on line 2, and on lines 3--7 we pull out all the table data using a copy of
+the table, named \code{Tmp}, which is formatted into a string, such that the
+\code{Profile} field can accept the value. Note that \code{Profile} is updated
+twice, but the last value supplied will be the one used. The last column
+update is a dummy, such that we can close the quote.
+
+\subsection{Altering private user data}
+Looking at the authentication mechanism, there is a flaw which allows for
+unauthorized login. The flaw occurs in \file{includes/auth.php} as a result of
+the operator precedence in SQL. It completely ignores the password if a user
+is supplied, followed by \code{' OR '1'='1}.
+
+\begin{lstlisting}[language=SQL]
+SELECT * FROM Person
+WHERE Username='br0ns'
+   OR '1'='1'
+  AND Password='secret'
+\end{lstlisting}
+
+The \code{AND} operator has higher precedence than \code{OR}, and so the
+expression takes on the form $p \lor (q \land r)$. Since we know that the user
+br0ns exists (corresponding to the $p$ term) the left-hand term of the $\lor$
+always yields true, and because only one term of $\lor$ need be true, so is
+the statement.
+
+Having access to br0ns' account, we can alter his password by applying the
+same technique as previously discussed \secref{sec:white|sub:acquire}. We want
+to change br0ns' password, but since passwords are stored as MD5 encryptions
+if we want to be able to use it we will have to precalculate the supplied
+value.
+
+Since we have the salt already \secref{sec:white|sub:acquire} we can replicate
+the algorithm by which the site calculates the stored passwords, which we can
+then use to update his password. Let's say that we want to change the password
+to ``0wn3d'', we would do as follows in any PHP file.
+
+\begin{figure}[H]
+    \begin{lstlisting}[language=PHP]
+<? echo md5('0wn3d'.'beef'); ?>
+    \end{lstlisting}
+    \caption{Password calculation}
+\end{figure}
+
+The above produces the MD5 encrypted password
+``1de6ccdf75d751e707481d390f532788''. So, now we simply update the profile by
+inputting the following statement in the profile update form on the
+\file{index.php} page.
+
+\begin{figure}[H]
+    \begin{lstlisting}[language=SQL]
+',
+Person.Profile =
+(
+    SELECT Tmp.Profile
+    FROM (SELECT * FROM Person) AS Tmp
+    WHERE Tmp.Profile = 'br0ns'
+),
+Password='1de6ccdf75d751e707481d390f532788
+    \end{lstlisting}
+    \caption{Profile update input}
+\end{figure}
+
+This effectively changes the password of br0ns' user. By precalculating the
+password into a real hashed password, we can now access br0ns' user using the
+login form by supplying the ``owned'' password.
+
+\subsection{Possible fixes}
+Both attacks abuses the fact that PHP doesn't care what is passed to it. There
+are two possible solutions; either escape characters that can be used to
+expand SQL statements in unintended ways, or use prepared SQL statements. The
+first is simple and somewhat effective, but still leaves the system very
+vulnerable. The latter makes sure that the SQL queries only requests the
+intended statement fields, which is far more secure. Both can be employed in
+this system to make it far more reliable and secure.
+
+\end{document}
+

