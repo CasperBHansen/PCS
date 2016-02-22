@@ -1,5 +1,5 @@
 all:
-	g++ example.cpp -o example
+	g++ -m32 example.cpp -o example
 
 run:
 	./example
