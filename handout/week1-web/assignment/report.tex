@@ -86,6 +86,41 @@
 \section{Black Box Assessment}
 
 \subsection{Cookie Theft}
+Our objective is to send a message to the {\tt rloewe} user, and upon opening
+this message, steal the document cookie, by sending it back to us.
+
+There is no security measures in place that removes javascript from the
+message content in the POST request, so we are free to perform any action on
+behalf of the user who opens the message. This makes the task quite easy.
+
+\begin{figure}[H]
+    \lstinputlisting{cookie_theft.html}
+    \caption{Cookie theft message (\file{cookie\_theft.html})}
+\end{figure}
+
+In order to avoid suspecious browser behaviour during the attack, the employed
+method makes an asynchronous POST request to {\tt messages.php}, which is the
+page that handles sending messages. This, along with all the parameters passed
+was discovered by simply reviewing the rendered HTML for the form on the page.
+
+So, we construct an {\tt XMLHttpRequest} on line 2, and the url to be requested
+on line 4. Then we establish our argument data to be sent on lines 5--7, and
+construct the URL encoded parameterlist on line 9. The attack then begins on
+line 11, where we open the request, using the POST method, constructed URL and
+make sure that the request is asynchronous. The request header is set on line
+12, to ensure that the request is handled properly, and line 13 then sends the
+parameters, which in turn is handled as any normal message --- this is,
+however, performed without the knowledge of the victim.
+
+Lastly, lines 15--17 is simply a regular message, so as to avoid suspicion of
+the victim in question.
+
+\subsubsection{Possible fix}
+Upon receiving the request, and more importantly before making use of the
+passed data, the page should escape characters that can be used to terminate,
+or as in this case, produce an HTML element or similar malicious technique.
+
+\iffalse
 As can be seen in the response URL by sending a request using the form in
 \file{users.php} it uses the {\it get} method. The form field is named
 ``user'', as is apparent from the URL response. Observing that the page uses
@@ -117,6 +152,7 @@ and upon completion the user simply sees the regular \file{users.php} page.
 Upon receiving the request, and more importantly before making use of the
 passed data, the page should escape characters that can be used to terminate
 an HTML element or similar malicious technique.
+\fi
 
 \newpage
 \subsection{Cross-site Request Forgery}
@@ -163,6 +199,8 @@ explicitly white-list declared referers.
 In the file \file{index.php} on lines 20--21 an SQL query is constructed from
 the text field data supplied by the \code{profileform} on lines 14--29. The
 PHP preparations for the SQL statement looks as follows.
+
+\begin{multicols}{2}
 \begin{figure}[H]
     \begin{lstlisting}
 UPDATE Person
@@ -171,33 +209,53 @@ WHERE ProfileId = $user->id
     \end{lstlisting}
     \caption{Profile update SQL statement}
 \end{figure}
+
+\columnbreak
+
 Since MySQL allows for updating multiple values we can append any number of
 columns and give them values to our liking. All we have to ensure is that we
 terminate the opened quote. The statement below is given as input.
+\end{multicols}
 
 \begin{figure}[H]
     \begin{lstlisting}[language=SQL]
-',
-Person.DikuCoins = 100,
-Person.Profile =
+', Person.DikuCoins = 100, Person.Profile =
 (
     SELECT GROUP_CONCAT( CONCAT(Tmp.PersonId, '\t', Tmp.Username, '\t', Tmp.Salt, '\t', Tmp.DikuCoins) SEPARATOR '\n')
     FROM (SELECT * FROM Person) AS Tmp
 ),
 Username='<your-username>
-% Password='5d4d92ea6d0ef715c6e14454ddba3697
     \end{lstlisting}
     \caption{Profile update input}
 \end{figure}
 
+% Password='5d4d92ea6d0ef715c6e14454ddba3697
+
+\begin{multicols}{2}
 The statement above terminates the opened quote on line 1, and then by comma
 separation of each column we wish to update we supply the data we want to
-alter. As can be seen, we set our own DIKU coins to 100 --- just for fun ---
+alter. 
+\begin{figure}[H]
+    \begin{lstlisting}
+1   kflarsen        salt    42
+2   br0ns           beef    42
+3   kokjo           4242    42
+4   kristoff3r      4242    42
+5   NicolaiNebel    4242    42
+6   rloewe          4242    42
+7   you             evil    20
+    \end{lstlisting}
+    \caption{Resulting profile from SQL injection}
+\end{figure}
+
+As can be seen, we set our own DIKU coins to 100 --- just for fun ---
 on line 2, and on lines 3--7 we pull out all the table data using a copy of
 the table, named \code{Tmp}, which is formatted into a string, such that the
 \code{Profile} field can accept the value. Note that \code{Profile} is updated
 twice, but the last value supplied will be the one used. The last column
 update is a dummy, such that we can close the quote.
+
+\columnbreak
 
 \subsection{Altering private user data}
 Looking at the authentication mechanism, there is a flaw which allows for
@@ -219,11 +277,12 @@ always yields true, and because only one term of $\lor$ need be true, so is
 the statement.
 
 Having access to br0ns' account, we can alter his password by applying the
-same technique as previously discussed \secref{sec:white|sub:acquire}. We want
-to change br0ns' password, but since passwords are stored as MD5 encryptions
-if we want to be able to use it we will have to precalculate the supplied
-value.
+same technique as in \secref{sec:white|sub:acquire}. Since passwords are stored
+as MD5 encryptions we will have to precalculate the supplied value.
 
+\end{multicols}
+
+\begin{multicols}{2}
 Since we have the salt already \secref{sec:white|sub:acquire} we can replicate
 the algorithm by which the site calculates the stored passwords, which we can
 then use to update his password. Let's say that we want to change the password
@@ -243,8 +302,7 @@ inputting the following statement in the profile update form on the
 
 \begin{figure}[H]
     \begin{lstlisting}[language=SQL]
-',
-Person.Profile =
+', Person.Profile =
 (
     SELECT Tmp.Profile
     FROM (SELECT * FROM Person) AS Tmp
@@ -267,6 +325,8 @@ first is simple and somewhat effective, but still leaves the system very
 vulnerable. The latter makes sure that the SQL queries only requests the
 intended statement fields, which is far more secure. Both can be employed in
 this system to make it far more reliable and secure.
+
+\end{multicols}
 
 \end{document}
 

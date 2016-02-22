@@ -6,14 +6,22 @@
 = Schedule
 
 Lecture:
-  Monday, May 5th, 10:00-12:00 in Lille UP1
+  Monday, May 4nd, 10:15-12:00 in Aud1, AKB.
 
 Lab:
-  Tuesday, May 6th, 13:00-15:00 in 1-0-04 (Group 1)
-                                  1-0-10 (Group 2)
+  Tuesday, May 5th, 13:00-15:00 in A107, HCØ (Group 1)
+                                   A110, HCØ (Group 2)
+                                   A111, HCØ (Group 3)
+                                   A112, HCØ (Group 4)
+
+Student presentations:
+  Friday, May 13th, 10:15-12:00 in the old library, DIKU.
 
 Assignment deadline:
-  Sunday, May 11h, 23:59:59
+  Friday, May 13th, 23:59:48
+
+Correction date:
+  Monday, May 22th
 
 
 = Reading material
@@ -40,5 +48,3 @@ Please familiarize yourself with the exercise before the lab session.
 
 Refer to assignment/readme.txt for details.  Note that the assignment should be
 solved individually, and handed in through Absalon.
-
-The deadline for handing in the assignment is Sunday at 23:59:59.

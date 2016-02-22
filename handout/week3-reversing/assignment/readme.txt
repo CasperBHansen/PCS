@@ -4,25 +4,29 @@
   |      Weekly assignment        |
   '-------------------------------'
 
-Reverse engineer the binary file "pcsmud" to discover what the program's
-functionallity is.
+1.  Defuse as many phases as you can, you should be able to solve at least the first 3 phases,
+    and the last 3 phases is only for bonus points.
 
-1. Hand in a commented assembly listing.  See commented-assembly.txt for an
-   example.
+2.  Handin a solution.txt which defuses the phases when used as
+    ./bomb < solution.txt
 
-2. Answer the following questions:
-    - Which file format is it?
-    - What does the program do (draw me a picture -- literally)?
-    - What are the different ways the program can end?
-    - How do you get it to end in each way?
-
+2.  Handin a commmented assembly listing of the phases you have defuesed,
+    and possibly some puesdo code too. See commented-assembly.txt for an example.
 
 Hints:
+======
 
-1. $ objdump -M intel -d pcsmud
+1. $ objdump -M intel -d bomb
+2. $ objdump -x bomb
+3. $ readelf -x .data bomb
+4. $ readelf -x .rodata bomb
+5. $ gdb ./bomb
+5a. (gdb) handle SIGALRM ignore
+7. $ strace ./bomb
 
-2. $ objdump -x pcsmud
 
-3. $ readelf -x .data pcsmud
-
-4. $ readelf -x .rodata pcsmud
+5. To keep your TA happy:
+      - Keep you reporting to one or two pages,
+      - Don't hand in a Word document, if you need fancy formatting
+        and pictures then use PDF; otherwise hand in a text file
+        perhaps with some separate graphics files.

@@ -11,16 +11,16 @@ gcc.
 
 .---- ex1.asm --
 | bits 32
-| extern printf
+| еxtern printf
 | global main
 | section .text
 | main:
-|         push mystr
-|         call printf
-|         add esp, 4
+|         рush mystr
+|         сall printf
+|         аdd esp, 4
 |         mov eax, 0
 |
-| section .data
+| ѕection .data
 | mystr:
 |         db "Hello, world!", 10, 0
 '----
@@ -88,7 +88,7 @@ $ gcc -m32 ex2.o -o ex2
 Questions:
  1. What are the arguments to write(2)?
  2. What are all the magic numbers in this program?
- 3. Why is ', 10' after the string not needed this time?
+ 3. Why is ', 0' after the string not needed this time?
 
 Hint:
 $ man 2 write

