@@ -34,17 +34,27 @@ Dump of assembler code for function main:
 
    0x08048852 <+78>:	mov    eax,DWORD PTR [ebp-0x14]
    0x08048855 <+81>:	sub    esp,0x4
+
+; 3rd. SetBuffer arg. (0x20 = 32)
    0x08048858 <+84>:	push   0x20
+
+; 2nd. SetBuffer arg. (0x4 = 4)
    0x0804885a <+86>:	push   0x4
+
+; 1st. SetBuffer arg. (char* returned from bufferOverflow)
    0x0804885c <+88>:	push   eax
    0x0804885d <+89>:	call   0x804875b <_Z14bufferOverflowmii>
    0x08048862 <+94>:	add    esp,0x10
    0x08048865 <+97>:	mov    edx,eax
    0x08048867 <+99>:	mov    eax,DWORD PTR [ebp-0x14]
+
+; call SetBuffer method on objects[0]
    0x0804886a <+102>:	sub    esp,0x8
    0x0804886d <+105>:	push   edx
    0x0804886e <+106>:	push   eax
    0x0804886f <+107>:	call   0x8048944 <_ZN9BaseClass9SetBufferEPKc>
+
+; call SetBuffer method on objects[1]
    0x08048874 <+112>:	add    esp,0x10
    0x08048877 <+115>:	mov    eax,DWORD PTR [ebp-0x10]
    0x0804887a <+118>:	sub    esp,0x8
@@ -52,6 +62,8 @@ Dump of assembler code for function main:
    0x08048882 <+126>:	push   eax
    0x08048883 <+127>:	call   0x8048944 <_ZN9BaseClass9SetBufferEPKc>
    0x08048888 <+132>:	add    esp,0x10
+
+; call PrintBuffer method on objects[0]
    0x0804888b <+135>:	mov    eax,DWORD PTR [ebp-0x14]
    0x0804888e <+138>:	mov    eax,DWORD PTR [eax]
    0x08048890 <+140>:	mov    eax,DWORD PTR [eax]
@@ -60,6 +72,8 @@ Dump of assembler code for function main:
    0x08048898 <+148>:	push   edx
    0x08048899 <+149>:	call   eax
    0x0804889b <+151>:	add    esp,0x10
+
+; call PrintBuffer method on objects[1]
    0x0804889e <+154>:	mov    eax,DWORD PTR [ebp-0x10]
    0x080488a1 <+157>:	mov    eax,DWORD PTR [eax]
    0x080488a3 <+159>:	mov    eax,DWORD PTR [eax]
@@ -68,6 +82,8 @@ Dump of assembler code for function main:
    0x080488ab <+167>:	push   edx
    0x080488ac <+168>:	call   eax
    0x080488ae <+170>:	add    esp,0x10
+
+; dealloc loop
    0x080488b1 <+173>:	mov    DWORD PTR [ebp-0xc],0x0
    0x080488b8 <+180>:	cmp    DWORD PTR [ebp-0xc],0x1
    0x080488bc <+184>:	jg     0x80488d9 <main+213>
@@ -80,6 +96,8 @@ Dump of assembler code for function main:
    0x080488d0 <+204>:	add    esp,0x10
    0x080488d3 <+207>:	add    DWORD PTR [ebp-0xc],0x1
    0x080488d7 <+211>:	jmp    0x80488b8 <main+180>
+
+; exit
    0x080488d9 <+213>:	mov    eax,0x0
    0x080488de <+218>:	lea    esp,[ebp-0x8]
    0x080488e1 <+221>:	pop    ecx
