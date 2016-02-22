@@ -7,6 +7,8 @@ Dump of assembler code for function main:
    0x08048811 <+13>:	push   ebx
    0x08048812 <+14>:	push   ecx
    0x08048813 <+15>:	sub    esp,0x10
+
+; make an instance of MyClass1
    0x08048816 <+18>:	sub    esp,0xc
    0x08048819 <+21>:	push   0x24
    0x0804881b <+23>:	call   0x8048610 <_Znwj@plt>
@@ -17,6 +19,8 @@ Dump of assembler code for function main:
    0x08048829 <+37>:	call   0x80489de <_ZN8MyClass1C2Ev>
    0x0804882e <+42>:	add    esp,0x10
    0x08048831 <+45>:	mov    DWORD PTR [ebp-0x14],ebx
+
+; make an instance of MyClass2
    0x08048834 <+48>:	sub    esp,0xc
    0x08048837 <+51>:	push   0x24
    0x08048839 <+53>:	call   0x8048610 <_Znwj@plt>
@@ -27,6 +31,7 @@ Dump of assembler code for function main:
    0x08048847 <+67>:	call   0x8048a00 <_ZN8MyClass2C2Ev>
    0x0804884c <+72>:	add    esp,0x10
    0x0804884f <+75>:	mov    DWORD PTR [ebp-0x10],ebx
+
    0x08048852 <+78>:	mov    eax,DWORD PTR [ebp-0x14]
    0x08048855 <+81>:	sub    esp,0x4
    0x08048858 <+84>:	push   0x20
